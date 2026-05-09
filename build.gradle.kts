@@ -31,6 +31,10 @@ tasks {
 
     processResources {
         val props = mapOf("version" to version)
+        // Without an explicit input, Gradle's configuration cache treats processResources as
+        // up-to-date across version bumps and the expanded plugin.yml stays stale. Declare
+        // version as an input so the task re-runs whenever it changes.
+        inputs.property("version", version)
         filesMatching("plugin.yml") {
             expand(props)
         }

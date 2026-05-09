@@ -30,8 +30,6 @@ public final class Liminal extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        defaultLevel1 = ensureDefaultLevel1World();
-
         getServer().getPluginManager().registerEvents(new MobSuppressListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerRouterListener(() -> defaultLevel1), this);
 
@@ -41,6 +39,12 @@ public final class Liminal extends JavaPlugin {
             cmd.setExecutor(exec);
             cmd.setTabCompleter(exec);
         }
+
+        // World creation has to wait until the server finishes initializing — STARTUP-load
+        // plugins are enabled before Bukkit's main worlds are ready, and CraftServer rejects
+        // createWorld before then with IllegalStateException. Scheduling on the next tick
+        // defers it past server load. PlayerRouterListener is null-tolerant in the gap.
+        getServer().getScheduler().runTask(this, () -> defaultLevel1 = ensureDefaultLevel1World());
     }
 
     @Override
