@@ -3,4 +3,15 @@ version: '${version}'
 
 main: com.github.ping.liminal.Liminal
 api-version: '26.1.2'
-load: POSTWORLD
+load: STARTUP
+
+commands:
+  liminalworld:
+    description: Create or teleport to a Liminal-generated world.
+    usage: /liminalworld <create|tp> <name> [generator]
+    permission: liminal.admin
+
+permissions:
+  liminal.admin:
+    description: Allows /liminalworld and other Liminal admin commands.
+    default: op

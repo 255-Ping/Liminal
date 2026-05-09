@@ -4,7 +4,7 @@ A Paper plugin that overhauls vanilla Minecraft into a backrooms survival experi
 
 - **Package root:** `com.github.ping.liminal`
 - **Plugin class:** `com.github.ping.liminal.Liminal`
-- **Build:** `./gradlew build` — produces a jar in `build/libs/`
+- **Build:** `./gradlew build` — jar is redirected to `/home/ping/Documents/LiminalServer/plugins/` via the `jar` task's `destinationDirectory` (see `build.gradle.kts`). Drop a fresh build straight into the running server.
 - **Paper API:** `26.1.2` (toolchain Java 25; `runServer` task uses Minecraft `26.1.2`)
 
 ## Skills you must use

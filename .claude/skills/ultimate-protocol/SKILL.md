@@ -51,7 +51,7 @@ These are repo-specific knobs — apply them silently, don't restate them in out
 - Paper-plugin layout (`com.github.ping.liminal.*`); manager / listener / GUI / command split per feature.
 - Theme: backrooms survival overhaul. User-facing copy should lean eerie / clinical / muted — no cheerful flourishes.
 - Item naming, lore, GUI titles, and chat messages follow the `text-style` skill (Adventure Components, no legacy color codes, italic-false on every Component used as a name/lore line).
-- Gradle build: `./gradlew build`. Output jar lands in `build/libs/`.
+- Gradle build: `./gradlew build`. Output jar lands in `/home/ping/Documents/LiminalServer/plugins/` (the `jar` task's `destinationDirectory` is redirected there in `build.gradle.kts`).
 - New player-facing features should land behind a `features.<name>` toggle in `src/main/resources/config.yml` and a guarded init block in `Liminal.onEnable`. Don't wire a feature into `onEnable` unconditionally.
 - Per-feature data and configs live in subfolders under `src/main/resources/` named after the feature.
 - Every command class implements `CommandExecutor + TabCompleter`. Register with both `setExecutor` and `setTabCompleter` in `Liminal.onEnable`. Empty completions return `Collections.emptyList()` (or a `TabUtil.empty()` once that exists).

@@ -25,6 +25,10 @@ tasks {
         jvmArgs("-Xms2G", "-Xmx2G")
     }
 
+    jar {
+        destinationDirectory.set(file("/home/ping/Documents/LiminalServer/plugins"))
+    }
+
     processResources {
         val props = mapOf("version" to version)
         filesMatching("plugin.yml") {

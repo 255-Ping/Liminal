@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//home/ping/IdeaProjects/SurvivalCore/**)",
+      "Read(//home/ping/IdeaProjects/**)",
+      "Bash(chmod +x *)",
+      "Bash(./gradlew build *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(./gradlew clean *)"
+    ]
+  }
+}
