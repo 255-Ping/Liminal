@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/build-and-push.py",
+            "timeout": 180,
+            "statusMessage": "gradle.properties changed — running build + git push"
+          }
+        ]
+      }
+    ]
+  }
+}

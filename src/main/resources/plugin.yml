@@ -1,0 +1,6 @@
+name: Liminal
+version: '${version}'
+
+main: com.github.ping.liminal.Liminal
+api-version: '26.1.2'
+load: POSTWORLD
