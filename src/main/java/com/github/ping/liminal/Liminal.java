@@ -1,9 +1,13 @@
 package com.github.ping.liminal;
 
 import com.github.ping.liminal.command.LiminalWorldCommand;
+import com.github.ping.liminal.listener.MobSuppressListener;
+import com.github.ping.liminal.listener.PlayerRouterListener;
 import com.github.ping.liminal.world.LevelGenerator;
 import com.github.ping.liminal.world.LevelGeneratorRegistry;
 import com.github.ping.liminal.world.level1.Level1Generator;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.generator.BiomeProvider;
 import org.bukkit.generator.ChunkGenerator;
@@ -11,17 +15,26 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class Liminal extends JavaPlugin {
 
+    /** Hardcoded for v1; promote to config when there's more than one default level. */
+    private static final String DEFAULT_LEVEL1_WORLD = "liminal_level1";
+
     private final LevelGeneratorRegistry levels = new LevelGeneratorRegistry();
+    private World defaultLevel1;
 
     @Override
     public void onLoad() {
-        // Register in onLoad — STARTUP-load means Bukkit asks getDefaultWorldGenerator
-        // for bukkit.yml-defined worlds before onEnable fires.
+        // Registry must be populated before bukkit.yml-defined worlds open. STARTUP-load
+        // means Bukkit calls getDefaultWorldGenerator between onLoad and onEnable.
         levels.register(new Level1Generator());
     }
 
     @Override
     public void onEnable() {
+        defaultLevel1 = ensureDefaultLevel1World();
+
+        getServer().getPluginManager().registerEvents(new MobSuppressListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerRouterListener(() -> defaultLevel1), this);
+
         PluginCommand cmd = getCommand("liminalworld");
         if (cmd != null) {
             LiminalWorldCommand exec = new LiminalWorldCommand(levels);
@@ -51,5 +64,20 @@ public final class Liminal extends JavaPlugin {
 
     public LevelGeneratorRegistry levels() {
         return levels;
+    }
+
+    public World defaultLevel1() {
+        return defaultLevel1;
+    }
+
+    private World ensureDefaultLevel1World() {
+        World existing = getServer().getWorld(DEFAULT_LEVEL1_WORLD);
+        if (existing != null) return existing;
+        LevelGenerator gen = levels.get("level1").orElseThrow();
+        getLogger().info("Creating default Level 1 world: " + DEFAULT_LEVEL1_WORLD);
+        return new WorldCreator(DEFAULT_LEVEL1_WORLD)
+                .generator(gen.chunkGenerator())
+                .biomeProvider(gen.biomeProvider())
+                .createWorld();
     }
 }

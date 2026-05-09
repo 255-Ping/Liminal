@@ -1,12 +1,12 @@
 package com.github.ping.liminal.world.level1;
 
+import com.github.ping.liminal.world.LiminalChunkGenerator;
 import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.generator.ChunkGenerator;
 import org.bukkit.generator.WorldInfo;
 
-public final class Level1ChunkGenerator extends ChunkGenerator {
+public final class Level1ChunkGenerator extends LiminalChunkGenerator {
 
     @Override
     public void generateNoise(WorldInfo worldInfo, Random random, int chunkX, int chunkZ, ChunkData chunkData) {
