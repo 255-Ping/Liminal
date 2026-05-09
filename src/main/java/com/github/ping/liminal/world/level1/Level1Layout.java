@@ -48,16 +48,23 @@ final class Level1Layout {
     // --- Materials ---
     private static final Material WALL_MAT          = Material.YELLOW_TERRACOTTA;
     private static final Material FLOOR_MAT         = Material.OAK_PLANKS;
+    private static final Material CARPET_MAT        = Material.YELLOW_CARPET;
     private static final Material CEILING_LIT_MAT   = Material.OCHRE_FROGLIGHT;
     private static final Material CEILING_DARK_MAT  = Material.OAK_PLANKS;
     private static final Material BEDROCK_MAT       = Material.BEDROCK;
     private static final Material DOOR_MAT          = Material.OAK_DOOR;
 
     // --- Probabilities (0..99) ---
-    private static final int WALL_PCT       = 65;
-    private static final int LIGHT_PCT      = 15; // occasional spots of lighting in the oak ceiling
-    private static final int DOOR_PCT       = 12;
-    private static final int STAIRWELL_PCT  = 5;
+    private static final int WALL_PCT             = 65;
+    private static final int LIGHT_PCT            = 15; // occasional spots of lighting in the oak ceiling
+    private static final int DOOR_PCT             = 12;
+    private static final int STAIRWELL_PCT        = 5;
+    private static final int CONTAINER_PCT        = 8;
+    private static final int CONTAINER_BARREL_PCT = 60;
+
+    /** Where a container will end up in the world after chunk gen. The matching loot
+     *  listener recomputes this from the same seed to populate the inventory. */
+    public record ContainerSpot(int x, int y, int z, Material type) {}
 
     static void generate(long seed, int chunkX, int chunkZ, ChunkGenerator.ChunkData cd) {
         int baseX = chunkX << 4;
@@ -70,8 +77,10 @@ final class Level1Layout {
             }
         }
 
-        // 2. Per-cell features: doors and stairwells. Cells are aligned with chunks so each
-        // chunk owns exactly (16 / CELL_SIZE)^2 cells.
+        // 2. Per-cell features: doors, stairwells, then containers. Cells are aligned with
+        // chunks so each chunk owns exactly (16 / CELL_SIZE)^2 cells.
+        // Order matters: containers come after stairwells so a container roll on the same
+        // interior position as a stairwell pillar/ladder is rejected by the wall check.
         int cellsPerChunk = 16 / CELL_SIZE;
         int cellOriginX = chunkX * cellsPerChunk;
         int cellOriginZ = chunkZ * cellsPerChunk;
@@ -81,6 +90,7 @@ final class Level1Layout {
                 int cz = cellOriginZ + dcz;
                 placeDoors(seed, cx, cz, baseX, baseZ, cd);
                 placeStairwells(seed, cx, cz, baseX, baseZ, cd);
+                placeContainers(seed, cx, cz, baseX, baseZ, cd);
             }
         }
     }
@@ -105,6 +115,16 @@ final class Level1Layout {
             int ceilY = FLOOR_CEILING[floor];
             boolean lit = isCeilingLit(seed, wx, wz, floor);
             cd.setBlock(dx, ceilY, dz, lit ? CEILING_LIT_MAT : CEILING_DARK_MAT);
+        }
+
+        // Yellow carpet on every floor's interior. Walls / corners / open-doorway-walls live
+        // at lx==0 || lz==0; carpet only goes where the maze is open. Stairwell pillars and
+        // ladders overwrite this carpet during placeStairwells; containers overwrite it via
+        // an explicit AIR/CARPET allowance in placeContainers.
+        for (int floor = 0; floor < FLOORS; floor++) {
+            if (!isWallAt(seed, wx, wz, floor)) {
+                cd.setBlock(dx, FLOOR_SURFACE[floor] + 1, dz, CARPET_MAT);
+            }
         }
     }
 
@@ -207,6 +227,41 @@ final class Level1Layout {
                 cd.setBlock(lDx, y, lDz, ladder);
             }
         }
+    }
+
+    private static void placeContainers(long seed, int cx, int cz, int baseX, int baseZ,
+                                        ChunkGenerator.ChunkData cd) {
+        for (int floor = 0; floor < FLOORS; floor++) {
+            ContainerSpot spot = rollContainer(seed, cx, cz, floor);
+            if (spot == null) continue;
+            int dx = spot.x() - baseX, dz = spot.z() - baseZ;
+            if (dx < 0 || dx >= 16 || dz < 0 || dz >= 16) continue;
+            // Only overwrite air or our newly-placed carpet — never a wall, ladder, door, or pillar.
+            Material existing = cd.getType(dx, spot.y(), dz);
+            if (existing != Material.AIR && existing != CARPET_MAT) continue;
+            cd.setBlock(dx, spot.y(), dz, spot.type());
+        }
+    }
+
+    /**
+     * Decide whether (cx, cz, floor) should host a container, and if so, where + which type.
+     * Same function is called from the chunk-gen pass (places the block) and from
+     * Level1LootListener (populates inventory after the chunk is loaded with block entities).
+     * Inventories can't be reliably written from a BlockPopulator — Container#update() inside
+     * a LimitedRegion doesn't persist inventory contents — so the two phases are split.
+     *
+     * @return null if no container at this cell-floor; otherwise the world-space spot + type.
+     */
+    public static ContainerSpot rollContainer(long seed, int cx, int cz, int floor) {
+        long roll = rand(seed, cx, cz, 'C', floor);
+        if (roll % 100 >= CONTAINER_PCT) return null;
+        int lx = 1 + (int) ((roll >> 8) % 3);   // 1..3 (cell interior)
+        int lz = 1 + (int) ((roll >> 16) % 3);
+        int wx = cx * CELL_SIZE + lx;
+        int wz = cz * CELL_SIZE + lz;
+        int y  = FLOOR_SURFACE[floor] + 1;
+        Material type = ((roll >> 24) % 100) < CONTAINER_BARREL_PCT ? Material.BARREL : Material.CHEST;
+        return new ContainerSpot(wx, y, wz, type);
     }
 
     /** SplitMix-style avalanche. Returns a non-negative long so callers can `% N` safely. */

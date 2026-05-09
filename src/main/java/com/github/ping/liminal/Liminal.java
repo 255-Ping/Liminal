@@ -9,6 +9,7 @@ import com.github.ping.liminal.item.items.JacketItem;
 import com.github.ping.liminal.listener.MobSuppressListener;
 import com.github.ping.liminal.listener.PlayerRouterListener;
 import com.github.ping.liminal.listener.ThirstListener;
+import com.github.ping.liminal.world.level1.Level1LootListener;
 import com.github.ping.liminal.stat.StatActionBarTask;
 import com.github.ping.liminal.stat.StatDamageTask;
 import com.github.ping.liminal.stat.StatDecayTask;
@@ -60,6 +61,7 @@ public final class Liminal extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new MobSuppressListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerRouterListener(() -> defaultLevel1), this);
         getServer().getPluginManager().registerEvents(new ThirstListener(), this);
+        getServer().getPluginManager().registerEvents(new Level1LootListener(), this);
 
         PluginCommand cmd = getCommand("liminalworld");
         if (cmd != null) {
