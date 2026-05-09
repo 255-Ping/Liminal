@@ -13,7 +13,11 @@ public final class Level1ChunkGenerator extends ChunkGenerator {
         Level1Layout.generate(worldInfo.getSeed(), chunkX, chunkZ, chunkData);
     }
 
-    @Override public boolean shouldGenerateNoise()        { return true;  }
+    // shouldGenerate* flags control whether VANILLA generation runs FOR THAT PHASE in addition
+    // to our overrides. We want zero vanilla output (no stone, no surface grass, no caves, no
+    // mobs at chunk-gen) — return false everywhere. Our generateNoise override still runs; it's
+    // the call-point, not a flag-gated step.
+    @Override public boolean shouldGenerateNoise()        { return false; }
     @Override public boolean shouldGenerateSurface()      { return false; }
     @Override public boolean shouldGenerateBedrock()      { return false; }
     @Override public boolean shouldGenerateCaves()        { return false; }
