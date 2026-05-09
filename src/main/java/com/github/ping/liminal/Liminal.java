@@ -1,8 +1,19 @@
 package com.github.ping.liminal;
 
 import com.github.ping.liminal.command.LiminalWorldCommand;
+import com.github.ping.liminal.item.CustomItems;
+import com.github.ping.liminal.item.items.AlmondWaterItem;
+import com.github.ping.liminal.item.items.BottledWaterItem;
+import com.github.ping.liminal.item.items.CompassItem;
+import com.github.ping.liminal.item.items.JacketItem;
 import com.github.ping.liminal.listener.MobSuppressListener;
 import com.github.ping.liminal.listener.PlayerRouterListener;
+import com.github.ping.liminal.listener.ThirstListener;
+import com.github.ping.liminal.stat.StatActionBarTask;
+import com.github.ping.liminal.stat.StatDamageTask;
+import com.github.ping.liminal.stat.StatDecayTask;
+import com.github.ping.liminal.stat.StatService;
+import com.github.ping.liminal.task.CompassErraticTask;
 import com.github.ping.liminal.world.LevelGenerator;
 import com.github.ping.liminal.world.LevelGeneratorRegistry;
 import com.github.ping.liminal.world.level1.Level1Generator;
@@ -30,8 +41,25 @@ public final class Liminal extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // Item subsystem: bind the marker NamespacedKey, register the v1 item set.
+        CustomItems.init(this);
+        CustomItems.registry().register(new AlmondWaterItem());
+        CustomItems.registry().register(new BottledWaterItem());
+        CustomItems.registry().register(new CompassItem());
+        CustomItems.registry().register(new JacketItem());
+
+        // Stat subsystem: hunger + thirst PDC keys, action-bar render loop, decay, slow-death damage.
+        StatService.init(this);
+        StatActionBarTask.start(this);
+        StatDecayTask.start(this);
+        StatDamageTask.start(this);
+
+        // Erratic compass: re-target every held compass-erratic once a second.
+        CompassErraticTask.start(this);
+
         getServer().getPluginManager().registerEvents(new MobSuppressListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerRouterListener(() -> defaultLevel1), this);
+        getServer().getPluginManager().registerEvents(new ThirstListener(), this);
 
         PluginCommand cmd = getCommand("liminalworld");
         if (cmd != null) {

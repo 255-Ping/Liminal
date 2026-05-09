@@ -37,21 +37,25 @@ final class Level1Layout {
     };
     /** Ceiling Y per floor (the block above the air range). */
     private static final int[] FLOOR_CEILING = { CEILING_1, CEILING_2, CEILING_3 };
+    /** Floor surface Y per floor (the block players stand on). Used by the loot populator. */
+    static final int[] FLOOR_SURFACE = { FLOOR_BASE, CEILING_1, CEILING_2 };
+    /** Number of floors. */
+    static final int FLOORS = 3;
 
     /** Maze cell footprint. Must divide 16 evenly so cells align with chunk borders. */
     static final int CELL_SIZE = 4;
 
     // --- Materials ---
     private static final Material WALL_MAT          = Material.YELLOW_TERRACOTTA;
-    private static final Material FLOOR_MAT         = Material.BROWN_WOOL;
+    private static final Material FLOOR_MAT         = Material.OAK_PLANKS;
     private static final Material CEILING_LIT_MAT   = Material.OCHRE_FROGLIGHT;
-    private static final Material CEILING_DARK_MAT  = Material.WHITE_WOOL;
+    private static final Material CEILING_DARK_MAT  = Material.OAK_PLANKS;
     private static final Material BEDROCK_MAT       = Material.BEDROCK;
     private static final Material DOOR_MAT          = Material.OAK_DOOR;
 
     // --- Probabilities (0..99) ---
     private static final int WALL_PCT       = 65;
-    private static final int LIGHT_PCT      = 80;
+    private static final int LIGHT_PCT      = 15; // occasional spots of lighting in the oak ceiling
     private static final int DOOR_PCT       = 12;
     private static final int STAIRWELL_PCT  = 5;
 
@@ -206,7 +210,7 @@ final class Level1Layout {
     }
 
     /** SplitMix-style avalanche. Returns a non-negative long so callers can `% N` safely. */
-    private static long rand(long seed, int a, int b, int c, int d) {
+    static long rand(long seed, int a, int b, int c, int d) {
         long h = seed ^ 0x9E3779B97F4A7C15L;
         h = h * 0xBF58476D1CE4E5B9L + a;
         h = h * 0xBF58476D1CE4E5B9L + b;

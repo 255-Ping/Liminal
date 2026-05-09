@@ -65,14 +65,27 @@ Highlighted values inside lore use the same inline-`.append(...)` pattern as cha
 
 ## Quick reference: palette in use
 
-- `GOLD` — GUI titles (buzzing fluorescent overhead light)
+- `GOLD` — GUI titles (buzzing fluorescent overhead light), hunger stat value
 - `YELLOW` — primary action buttons, highlighted values (iconic walls)
-- `RED` — errors, cancel, disabled state (warning signage / blood)
+- `RED` — errors, cancel, disabled state, health stat value (warning signage / blood)
 - `GREEN` — success
-- `GRAY` — info, descriptions (carpet, concrete)
-- `DARK_GRAY` — chat prefix brackets, tertiary lore metadata (shadows, mildew)
+- `AQUA` — thirst stat value (the only place AQUA is currently used)
+- `GRAY` — info, descriptions, stat labels (carpet, concrete)
+- `DARK_GRAY` — chat prefix brackets, tertiary lore metadata, stat separators (shadows, mildew)
 
 Do not introduce new colors without updating this skill.
+
+## Stat action bar
+
+The stat HUD in the action bar is the canonical site for these colour assignments.
+Layout: `HP n/max  ·  Hunger n/20  ·  Thirst n/20`.
+
+- `HP` label GRAY, value RED.
+- `Hunger` label GRAY, value GOLD.
+- `Thirst` label GRAY, value AQUA.
+- Separator (`  ·  `) DARK_GRAY.
+
+If you change a stat's colour anywhere (e.g. a future GUI), match this assignment.
 
 ## Backrooms voice notes
 
